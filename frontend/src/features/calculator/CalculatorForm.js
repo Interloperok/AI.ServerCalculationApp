@@ -679,7 +679,7 @@ const CalculatorForm = ({
   // 'hf' forces HF (errors visibly if down). 'curated' forces local catalog.
   const [llmCatalog, setLlmCatalog] = useState([]);
   const [llmSourceMode, setLlmSourceMode] = useState(
-    () => (typeof window !== "undefined" && localStorage.getItem("llmSourceMode")) || "auto",
+    () => (typeof window !== "undefined" && localStorage.getItem("llmSourceMode")) || "hf",
   );
   // null = "not probed yet"; toggles to true/false after first probe
   const [hfReachable, setHfReachable] = useState(null);

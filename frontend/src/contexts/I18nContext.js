@@ -18,17 +18,19 @@ const I18nContext = createContext({
   available: VALID_LOCALES,
 });
 
+const DEFAULT_LOCALE = "en";
+
 const detect = () => {
-  if (typeof window === "undefined") return "en";
+  if (typeof window === "undefined") return DEFAULT_LOCALE;
   try {
     const stored = window.localStorage.getItem(LOCALE_STORAGE_KEY);
     if (VALID_LOCALES.includes(stored)) return stored;
   } catch {
     /* ignore */
   }
-  const nav = (navigator.language || "en").toLowerCase();
-  if (nav.startsWith("ru")) return "ru";
-  return "en";
+  // Always default to English; do not follow navigator.language (many dev
+  // machines run ru-RU while the product copy is maintained in EN first).
+  return DEFAULT_LOCALE;
 };
 
 export const I18nProvider = ({ children }) => {

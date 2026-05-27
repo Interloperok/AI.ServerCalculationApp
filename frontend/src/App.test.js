@@ -54,18 +54,13 @@ describe("App shell", () => {
     expect(screen.getAllByRole("link", { name: /github/i }).length).toBeGreaterThan(0);
   });
 
-  it("opens and closes the documentation drawer", () => {
+  it("renders documentation link to GitBook", () => {
     render(<App />);
 
-    fireEvent.click(screen.getByRole("button", { name: "Documentation" }));
-    expect(screen.getByText("Download .docx")).toBeInTheDocument();
-
-    fireEvent.click(screen.getByTitle("Close (Esc)"));
-    expect(screen.queryByText("Download .docx")).not.toBeInTheDocument();
-
-    fireEvent.click(screen.getByRole("button", { name: "Documentation" }));
-    fireEvent.keyDown(document, { key: "Escape" });
-    expect(screen.queryByText("Download .docx")).not.toBeInTheDocument();
+    const docsLink = screen.getByRole("link", { name: /documentation/i });
+    expect(docsLink).toHaveAttribute("href", "https://test-1-10.gitbook.io/test-1-docs");
+    expect(docsLink).toHaveAttribute("target", "_blank");
+    expect(docsLink).toHaveAttribute("rel", "noopener noreferrer");
   });
 
   it("handles guided tour callback transitions and finish", () => {
@@ -82,10 +77,6 @@ describe("App shell", () => {
         action: "next",
         index: 0,
       });
-    });
-    expect(screen.getByText("Download .docx")).toBeInTheDocument();
-
-    act(() => {
       joyrideProps.callback({
         status: "running",
         type: "step:after",
@@ -94,7 +85,6 @@ describe("App shell", () => {
       });
       jest.runOnlyPendingTimers();
     });
-    expect(screen.queryByText("Download .docx")).not.toBeInTheDocument();
 
     act(() => {
       joyrideProps.callback({

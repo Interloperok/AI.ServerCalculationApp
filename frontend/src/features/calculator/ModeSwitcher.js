@@ -57,7 +57,7 @@ const ModeSwitcher = ({ mode, onChange, headerEnd = null }) => {
       <div
         role="group"
         aria-labelledby={CONFIG_HEADING_ID}
-        className="grid grid-cols-3 gap-1.5 rounded-xl border border-border bg-surface p-1 shadow-card"
+        className="grid grid-cols-1 md:grid-cols-3 gap-1.5 rounded-xl border border-border bg-surface p-1 shadow-card"
       >
         {CALCULATOR_MODES.map((m) => {
           const active = mode === m.id;

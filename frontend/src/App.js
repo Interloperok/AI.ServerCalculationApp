@@ -11,6 +11,9 @@ import "./App.css";
 const APP_VERSION = "1.3.0";
 const SHOW_LANGUAGE_TOGGLE = false;
 const SHOW_THEME_TOGGLE = false;
+const DOCS_URL = "https://test-1-10.gitbook.io/test-1-docs";
+// Legacy in-app docx drawer (mammoth). Hidden while GitBook docs are primary.
+const SHOW_LEGACY_DOCS_DRAWER = false;
 // Methodology docx is bundled into the frontend image; served from the SPA
 // root so the app stays usable in air-gapped / offline environments.
 const METHODOLOGY_DOCX_URL = "/llm-methodology.docx";
@@ -253,9 +256,6 @@ function App() {
   const [docsHtml, setDocsHtml] = useState(null);
   const [docsLoadError, setDocsLoadError] = useState(null);
   const [docsLoading, setDocsLoading] = useState(false);
-  const [isMobile, setIsMobile] = useState(
-    () => typeof window !== "undefined" && window.innerWidth < 640,
-  );
   const [isMobileTour, setIsMobileTour] = useState(
     () => typeof window !== "undefined" && window.innerWidth < 1024,
   );
@@ -265,7 +265,6 @@ function App() {
 
   useEffect(() => {
     const check = () => {
-      setIsMobile(window.innerWidth < 640);
       const narrow = window.innerWidth < 1024;
       setIsMobileTour(narrow);
       isMobileTourRef.current = narrow;
@@ -306,7 +305,7 @@ function App() {
 
       if ([STATUS.FINISHED, STATUS.SKIPPED].includes(status)) {
         setRunTour(false);
-        if (!mobile) setDocsOpen(false);
+        if (SHOW_LEGACY_DOCS_DRAWER && !mobile) setDocsOpen(false);
         cleanupTourAuto();
         restoreSwipe();
         return;
@@ -315,7 +314,7 @@ function App() {
       if (type === "step:after") {
         if (action === "close") {
           setRunTour(false);
-          if (!mobile) setDocsOpen(false);
+          if (SHOW_LEGACY_DOCS_DRAWER && !mobile) setDocsOpen(false);
           cleanupTourAuto();
           restoreSwipe();
           return;
@@ -325,7 +324,7 @@ function App() {
 
         // VLM and OCR tours: just walk through anchors with the docs-drawer step.
         if (tourMode === "vlm" || tourMode === "ocr") {
-          if (!mobile) {
+          if (SHOW_LEGACY_DOCS_DRAWER && !mobile) {
             if (index === DOCS_STEP_INDEX) setDocsOpen(false);
             if (nextIndex === DOCS_STEP_INDEX) setDocsOpen(true);
           }
@@ -341,8 +340,10 @@ function App() {
             }, 400);
           }
         } else {
-          if (index === DOCS_STEP_INDEX) setDocsOpen(false);
-          if (nextIndex === DOCS_STEP_INDEX) setDocsOpen(true);
+          if (SHOW_LEGACY_DOCS_DRAWER) {
+            if (index === DOCS_STEP_INDEX) setDocsOpen(false);
+            if (nextIndex === DOCS_STEP_INDEX) setDocsOpen(true);
+          }
 
           if (nextIndex === PRESETS_STEP_INDEX) {
             setTimeout(() => {
@@ -372,9 +373,9 @@ function App() {
     [cleanupTourAuto, toggleAutoOptimize, tourMode],
   );
 
-  // Close docs drawer on Escape key
+  // Close docs drawer on Escape key (legacy drawer only)
   useEffect(() => {
-    if (!docsOpen) return;
+    if (!SHOW_LEGACY_DOCS_DRAWER || !docsOpen) return;
     const handleKey = (e) => {
       if (e.key === "Escape") setDocsOpen(false);
     };
@@ -386,7 +387,7 @@ function App() {
   // open. Fully offline: the docx is bundled into the frontend at
   // /llm-methodology.docx; mammoth runs entirely in the browser.
   useEffect(() => {
-    if (!docsOpen || docsHtml || docsLoadError) return;
+    if (!SHOW_LEGACY_DOCS_DRAWER || !docsOpen || docsHtml || docsLoadError) return;
     let cancelled = false;
     setDocsLoading(true);
     (async () => {
@@ -511,27 +512,17 @@ function App() {
                 <span>{t("app.tour.start")}</span>
               </button>
 
-              {isMobile ? (
-                <a
-                  href={METHODOLOGY_DOCX_URL}
-                  download="llm-methodology.docx"
-                  data-tour="docs-btn"
-                  title={t("app.docs")}
-                  className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-emerald-200 bg-white text-emerald-600 hover:bg-emerald-50 hover:border-emerald-300 shadow-sm transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
-                >
-                  <BookOpen className="h-3.5 w-3.5" strokeWidth={2.25} />
-                </a>
-              ) : (
-                <button
-                  onClick={() => setDocsOpen(true)}
-                  data-tour="docs-btn"
-                  title={t("app.docs")}
-                  className="inline-flex items-center gap-1.5 h-8 px-3 py-2 rounded-lg border border-emerald-200 bg-white text-emerald-600 hover:bg-emerald-50 hover:border-emerald-300 text-xs font-medium shadow-sm transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
-                >
-                  <BookOpen className="h-3.5 w-3.5" strokeWidth={2.25} />
-                  <span>{t("app.docs")}</span>
-                </button>
-              )}
+              <a
+                href={DOCS_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                data-tour="docs-btn"
+                title={t("app.docs")}
+                className="inline-flex items-center gap-1.5 h-8 px-3 py-2 rounded-lg border border-emerald-200 bg-white text-emerald-600 hover:bg-emerald-50 hover:border-emerald-300 text-xs font-medium shadow-sm transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+              >
+                <BookOpen className="h-3.5 w-3.5" strokeWidth={2.25} />
+                <span className="hidden sm:inline">{t("app.docs")}</span>
+              </a>
 
               <a
                 href={GITHUB_URL}
@@ -565,8 +556,8 @@ function App() {
         </div>
       </div>
 
-      {/* Docs Drawer — no overlay, rest of page stays interactive */}
-      {docsOpen && (
+      {/* Legacy docs drawer (docx + mammoth) — disabled while GitBook is primary */}
+      {SHOW_LEGACY_DOCS_DRAWER && docsOpen && (
         <div className="fixed inset-0 z-[9999] pointer-events-none">
           {/* Panel — only this receives clicks */}
           <div
