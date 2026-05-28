@@ -13,11 +13,8 @@ It combines a FastAPI backend with a React frontend and implements a formal meth
 Try the online calculator:
 👉 https://calc.aicolab.space/
 
-Full docs:
-👉 https://calc.aicolab.space/docs
-
 Methodology (full paper, in Russian):
-👉 https://docs.google.com/document/d/1_H4QWAda19SFJbaHD4oHycYAh5TdECCr/edit#heading=h.6wzccs1p9p8f
+👉 [https://test-1-10.gitbook.io/test-1-docs](https://test-1-10.gitbook.io/test-1-docs)
 
 ***
 
